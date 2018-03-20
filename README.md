@@ -1,2 +1,2 @@
-# haskellChess
-A Haskell based Implementation of Chess Engine
+# Sheldon - A Haskell Implementation of Intelligent Chess Engine #
+> CS653 (Functional Programming)
