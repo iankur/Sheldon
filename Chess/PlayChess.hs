@@ -73,4 +73,58 @@ play1 game = do
             putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
             play1 (fromJust botmove)
 
-playChess = play1 GameStart
+play2 game = do
+    putStr "Grant permission for Bot1 move : "
+    input1 <- getLine
+    let bot1move = makeMove game
+    putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+    printBoard (gameBoard (fromJust bot1move))
+    putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+    putStr "Grant permission for Bot2 move : "
+    input2 <- getLine
+    let bot2move = makeMove (fromJust bot1move)
+    printBoard (gameBoard (fromJust bot2move))
+    putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+    play2 (fromJust bot2move)
+    
+play3 game = do
+    if gameColor game == White then do
+                                putStrLn "Player1"
+                                putStrLn "--------"
+                               else do
+                                putStrLn "Player2"
+                                putStrLn "--------" 
+    putStr "Enter source column and row : "
+    input1 <- getLine
+    let source = split input1
+    let cfrom = (read (fst source) :: Int)
+    let rfrom = (read (snd source) :: Int)
+    putStr "Enter destination column and row : "
+    input2 <- getLine
+    let destination = split input2
+    let cto = (read (fst destination) :: Int)
+    let rto = (read (snd destination) :: Int)
+    putStr "Enter figure and color of the promotional move if any : "
+    input3 <- getLine
+    let figure = getFigure input3
+    let g = move (Field cfrom rfrom) (Field cto rto) figure game
+    putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+    case g of
+        Nothing    -> do
+            putStrLn "Invalid move, please try another move"
+            play3 game
+        Just ngame -> do
+            printBoard (gameBoard ngame)
+            putStrLn "------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+            play3 ngame
+            
+playChess = do
+    putStrLn "Press 1 for Human with Bot\nPress 2 for Bot with Bot\nPress 3 for Human with Human\n------------------------------\n"
+    putStr "Enter option : "
+    option <- getLine
+    if option == "1" then do
+                     play1 GameStart
+                    else if option == "2" then do
+                                          play2 GameStart
+                                        else do
+                                          play3 GameStart
