@@ -11,9 +11,10 @@ import Move
 import FigureMoves
 import Board
 
-data Game = GameStart | OngoingGame Color Board [Game] Move
+data Game = NullGame | GameStart | OngoingGame Color Board [Game] Move
 
 instance Show Game where
+  show NullGame = "Just an instance of game"
   show GameStart = "White to begin:\n" ++ showBoard startingBoard
   show (OngoingGame color board _ lastMove) =
     "Last move: " ++ (show $ other color) ++ " " ++
@@ -26,6 +27,7 @@ gameColor (OngoingGame color _ _ _) = color
 gameHist GameStart = []
 gameHist (OngoingGame _ _ hist _) = hist
 
+gameBoard NullGame = startingBoard
 gameBoard GameStart = startingBoard
 gameBoard (OngoingGame _ board _ _) = board
 
