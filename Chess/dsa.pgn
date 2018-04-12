@@ -1,0 +1,20 @@
+[Event "Computer chess game"]
+[Site "MacBook-Air"]
+[Date "2018.04.07"]
+[Round "?"]
+[White "tvatsal"]
+[Black "SOS 5.1 for Arena"]
+[Result "*"]
+[BlackElo "2000"]
+[ECO "A00"]
+[Opening "Barnes (Gedult) Opening"]
+[Time "09:53:27"]
+[WhiteElo "2400"]
+[TimeControl "300"]
+[Termination "unterminated"]
+[PlyCount "1"]
+[WhiteType "human"]
+[BlackType "program"]
+
+1. f3 *
+
