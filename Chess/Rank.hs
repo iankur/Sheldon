@@ -1,7 +1,7 @@
 module Rank where
 
 import qualified Data.Map as Map
-import Data.List (sortBy)
+import Data.List (sort)
 import Color
 import Figure
 import Field
@@ -48,6 +48,36 @@ colorRank game color =
 -- | Calculates the position rank from the point of view of a player.
 rank :: Game -> Color -> Int
 rank game color = colorRank game color - colorRank game (other color)
+
+instance Eq Game where
+  (==) game1 game2 = rank game1 (gameColor game1) == rank game2 (gameColor game2)
+  (/=) game1 game2 = rank game1 (gameColor game1) /= rank game2 (gameColor game2)
+
+instance Ord Game where
+  compare game1 game2 = rank game1 (gameColor game1) `compare` rank game2 (gameColor game2)
+  (<) game1 game2     = rank game1 (gameColor game1) < rank game2 (gameColor game2)
+  (<=) game1 game2    = rank game1 (gameColor game1) <= rank game2 (gameColor game2)
+  (>) game1 game2     = rank game1 (gameColor game1) > rank game2 (gameColor game2)
+  (>=) game1 game2    = rank game1 (gameColor game1) >= rank game2 (gameColor game2)
+  max game1 game2     | rank game1 (gameColor game1) > rank game2 (gameColor game2) = game1
+                      | otherwise                                                   = game2
+  min game1 game2     | rank game1 (gameColor game1) < rank game2 (gameColor game2) = game1
+                      | otherwise                                                   = game2
+
+top :: Int -> [Game] -> [Game]
+top k games = take k (sort games)
+
+prunedReptree k f x = Node x (map (prunedReptree k f) (top k (f x)))
+
+smallGameTree :: Int -> Game -> Tree Game
+smallGameTree k game = prunedReptree k validGames game
+
+maxrank :: [Game] -> Int
+maxrank games = maximum [rank game (gameColor game) | game <- games]
+
+giverank :: Tree Game -> [(Game, Int)]
+giverank (Node game []) = [(game, rank game (gameColor game))]
+giverank (Node game subtrees) = zip (map root subtrees) (map maxrank (map leaves subtrees))
 
 {-
 
