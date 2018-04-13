@@ -34,9 +34,11 @@ instance Show Game where
     (show $ Move.from lastMove) ++ " to " ++
     (show $ Move.to lastMove) ++ "\n"
 
+gameColor NullGame = White
 gameColor GameStart = White
 gameColor (OngoingGame color _ _ _) = color
 
+gameHist NullGame = []
 gameHist GameStart = []
 gameHist (OngoingGame _ _ hist _) = hist
 
