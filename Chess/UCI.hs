@@ -12,6 +12,8 @@ import Board
 import Figure
 import Color
 import ComputerPlayer
+--import SmartPlayer
+--import AdvancedPlayer
 
 -- Commands to engine from interface
 data UciQuery = UciHello
@@ -69,7 +71,7 @@ react UciNewGame _ = (GameStart, "")
 react (UciPosition (UciStartPos [])) game = (game, "")
 react (UciPosition (UciStartPos moves)) game = let lastmove = convertMove (last moves) game
                                                    refmove = findMove game
-                                               in if lastmove == refmove then (game, "") else (applyMove lastmove game, "")
+                                               in if lastmove == refmove then (game, "") else (applyMove lastmove game, show lastmove)
 
 react (UciPosition (UciFen p1 p2 p3 p4 p5 p6)) game = let g = construct p1 p2 game
                                                       in (addMove game g, "")
@@ -99,23 +101,41 @@ convertMove move game | len == 4 = normalMove move game
 -- Normal move of type aibj
 normalMove move game = let from = makeField (take 2 move)
                            to = makeField (drop 2 move)
-                       in case (checkCastlingMove from to game) of
-                            True -> CastlingMove from to to from
+                           (castling, rookFrom, rookTo) = checkCastlingMove from to game
+                       in case castling of
+                            True -> CastlingMove from to rookFrom rookTo
                             False -> case (checkEnPassantMove from to game) of
                                         True -> EnPassantMove from to to
                                         False -> RegularMove from to
                                     
 -- returns promotional move for given string and game state
-promotionMove move game = NullMove
+--promotionMove move game = NullMove
+promotionMove move game = let from = makeField (take 2 move)
+                              to = makeField (take 2 (drop 2 move))
+                              figure = Figure (piece (last move)) (gameColor game)
+                          in PromotionMove from to figure
 
 -- makes Field from given string like 'a2'
 makeField [col, row] = Field (ord col - (ord 'a') + 1) (ord row - (ord '0'))
 
 -- checks if CastlingMove or not
-checkCastlingMove :: Field -> Field -> Game -> Bool
-checkCastlingMove from to game = False
+checkCastlingMove :: Field -> Field -> Game -> (Bool, Field, Field)
+checkCastlingMove from to game = let Just (Figure piece _) = Map.lookup from (gameBoard game)
+                                     Field fromCol fromRow = from
+                                     Field toCol toRow = to
+                                     refRight = Field (fromCol+2) fromRow
+                                     refLeft = Field (fromCol-2) fromRow
+                                     rookRight = Field (toCol-1) toRow
+                                     rookLeft = Field (toCol+1) toRow
+                                 in if piece == King
+                                    then if to == refRight
+                                         then (True, Field 8 fromRow, rookRight)
+                                         else if to == refLeft
+                                              then (True, Field 1 fromRow, rookLeft)
+                                              else (False, from, to)
+                                    else (False, from, to)
 
--- checks if EnPassantMove or not
+-- [TODO] checks if EnPassantMove or not
 checkEnPassantMove :: Field -> Field -> Game -> Bool
 checkEnPassantMove from to game = False
 
