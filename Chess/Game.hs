@@ -13,13 +13,26 @@ import Board
 
 data Game = NullGame | GameStart | OngoingGame Color Board [Game] Move
 
+data Tree a = Node a [Tree a] deriving (Show, Eq)
+
+root :: Tree a -> a
+root (Node x ts) = x
+
+leaves :: Tree a -> [a]
+leaves (Node root []) = [root]
+leaves (Node root trees) = concat [leaves tree | tree <- trees]
+
+size :: Tree a -> Int
+size (Node root []) = 1
+size (Node root subtrees) = 1 + sum (map size subtrees)
+
 instance Show Game where
   show NullGame = "Just an instance of game"
   show GameStart = "White to begin:\n" ++ showBoard startingBoard
   show (OngoingGame color board _ lastMove) =
-    "Last move: " ++ (show $ other color) ++ " " ++
+    (showBoard board) ++ "Last move: " ++ (show $ other color) ++ " " ++
     (show $ Move.from lastMove) ++ " to " ++
-    (show $ Move.to lastMove) ++ "\n" ++ (showBoard board)
+    (show $ Move.to lastMove) ++ "\n"
 
 gameColor NullGame = White
 gameColor GameStart = White
@@ -84,6 +97,10 @@ isKingUnderCheck game =
                             (game:(gameHist game))
                             (RegularMove (Field 0 0) (Field 0 0))
   in isOtherKingUnderCheck newGame
+
+-- | Verifies if the King of the player who is about to make a move is under Checkmate
+isKingUnderCheckmate :: Game -> Bool
+isKingUnderCheckmate game = isKingUnderCheck game && not (elem False (map isOtherKingUnderCheck (validGames game)))
 
 -- | Verifies the conditions of when the castling move is permitted:
 -- whether the King and the Rook are on their initial positions,
@@ -166,6 +183,23 @@ nextGames game =
 validGames :: Game -> [Game]
 validGames game = filter (not . isOtherKingUnderCheck) $ nextGames game
 
+reptree f x = Node x (map (reptree f) (f x))
+
+-- | Creates a gametree of validgames
+gameTree :: Game -> Tree Game
+gameTree game = reptree validGames game
+
+prune :: Int -> Tree a -> Tree a
+prune 0 (Node n sub) = Node n []
+prune k (Node n sub) = Node n (map (prune (k-1)) sub)
+
+-- gameList :: Tree Game -> [Game]
+-- gameList (Node game []) = [game]
+-- gameList (Node game trees) = game : (gameList (head trees)) 
+
+-- validGames :: Game -> [Game]
+-- validGames game = 
+
 -- | Verifies if the game is over.
 -- The following end game conditions are handled:
 -- + after every possible move the King is under check,
@@ -173,23 +207,23 @@ validGames game = filter (not . isOtherKingUnderCheck) $ nextGames game
 -- + only the two Kings, one Bishop and one Knight are left on the board,
 -- + only the two Kings and two Knights of the same color are left on the board,
 -- + the same position occurred three times.
-isGameFinished game =
-  all isOtherKingUnderCheck (nextGames game) ||
-  elem (Map.elems (gameBoard game))
-       [ sort [ Figure King White, Figure King Black ],
-         sort [ Figure King White, Figure King Black , Figure Bishop White ],
-         sort [ Figure King White, Figure King Black , Figure Bishop Black ],
-         sort [ Figure King White, Figure King Black , Figure Knight White ],
-         sort [ Figure King White, Figure King Black , Figure Knight Black ],
-         sort [ Figure King White, Figure King Black , Figure Knight White , Figure Knight White ],
-         sort [ Figure King White, Figure King Black , Figure Knight Black , Figure Knight Black ]] ||
-  (not . null . filter (\g -> length g >= 3) . group . sort . map gameBoard $ game : gameHist game)
+-- isGameFinished game =
+--   all isOtherKingUnderCheck (nextGames game) ||
+--   elem (Map.elems (gameBoard game))
+--        [ sort [ Figure King White, Figure King Black ],
+--          sort [ Figure King White, Figure King Black , Figure Bishop White ],
+--          sort [ Figure King White, Figure King Black , Figure Bishop Black ],
+--          sort [ Figure King White, Figure King Black , Figure Knight White ],
+--          sort [ Figure King White, Figure King Black , Figure Knight Black ],
+--          sort [ Figure King White, Figure King Black , Figure Knight White , Figure Knight White ],
+--          sort [ Figure King White, Figure King Black , Figure Knight Black , Figure Knight Black ]] ||
+--   (not . null . filter (\g -> length g >= 3) . group . sort . map gameBoard $ game : gameHist game)
 
 -- | Returns 'Just' containing the color of the game winner or 'Nothing' if there is no winner.
-winner game =
-  if (isGameFinished game && isKingUnderCheck game)
-  then Just . other . gameColor $ game
-  else Nothing
+-- winner game =
+--   if (isGameFinished game && isKingUnderCheck game)
+--   then Just . other . gameColor $ game
+--   else Nothing
                                                                                               
 -- | Returns a new game state after moving a figure. If the given
 -- move is not possible, it returns Nothing.

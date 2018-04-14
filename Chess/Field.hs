@@ -18,10 +18,6 @@ data Field = Field { col :: Int, row :: Int }
 instance Show Field where
   show f = chr (ord 'a' + (col f) - 1) : show (row f)
 
--- | Returns a new field with coordinates moved
--- by the given number of rows and columns relative to the original field.
-relative (Field col row) c r = Field (col+c) (row+r)
-
 -- | Returns a boolean value indicating
 -- whether the given field belongs to the last row from
 -- the point of view of a player.
@@ -41,7 +37,6 @@ ghci
 Field 1 4 -- a4
 col (Field 1 4) -- 1
 row (Field 1 4) -- 4
-relative (Field 1 4) 1 1 -- b5
 isLastRow (Field 2 1) Black -- True
 isValid (Field 2 1) -- True
 :q

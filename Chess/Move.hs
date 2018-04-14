@@ -8,7 +8,7 @@ data Move = RegularMove   { from :: Field, to :: Field }
           | EnPassantMove { from :: Field, to :: Field, captured :: Field }
           | CastlingMove  { from :: Field, to :: Field, rookFrom :: Field, rookTo :: Field }
           | NullMove
-  deriving (Show,Eq)
+  deriving (Show, Eq)
 
 {-
 

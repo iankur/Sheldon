@@ -7,7 +7,6 @@ import Field
 import Move
 
 type Board = Map.Map Field Figure
-
 -- | The board state when the game starts.
 startingBoard :: Board
 startingBoard = Map.fromList [
@@ -50,12 +49,12 @@ printBoard board = putStrLn $ (showBoard board)
 
 -- | Shows the board.
 showBoard :: Board -> [Char]
-showBoard board = ("\x1b[31m" ++ (" \t\ta\t\tb\t\tc\t\td\t\te\t\tf\t\tg\t\th\n\n") ++ 
+showBoard board = ("\x1b[31m" ++ (" \t\ta\t\tb\t\tc\t\td\t\te\t\tf\t\tg\t\th\n\n\n\n\n") ++ 
                               "\x1b[0m" ++ concat (map showRow [8,7..1]) ++ "\x1b[31m" ++ 
                               " \t\ta\t\tb\t\tc\t\td\t\te\t\tf\t\tg\t\th\n" ++ "\x1b[0m")
   where showRow row = "\x1b[31m" ++ (show row) ++ "\x1b[0m" ++ "\t\t" ++
-                      concat (map (showField row) [1..8]) ++ "\t\t" ++
-                      "\x1b[31m" ++ (show row) ++ "\x1b[0m" ++ "\n\n"
+                      concat (map (showField row) [1..8]) ++ "\t" ++
+                      "\x1b[31m" ++ (show row) ++ "\x1b[0m" ++ "\n\n\n\n\n"
         showField row col = case Map.lookup (Field col row) board of
                               Just x -> show x ++ "\t\t"
                               Nothing -> "." ++ "\t\t"
