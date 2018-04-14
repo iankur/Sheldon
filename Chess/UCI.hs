@@ -65,7 +65,12 @@ react UciIsReady game = let s = "readyok"
 
 react UciNewGame _ = (GameStart, "")
 
-react (UciPosition (UciStartPos _)) game = (game,"")
+--react (UciPosition (UciStartPos _)) game = (game,"")
+react (UciPosition (UciStartPos [])) game = (game, "")
+react (UciPosition (UciStartPos moves)) game = let lastmove = convertMove (last moves) game
+                                                   refmove = findMove game
+                                               in if lastmove == refmove then (game, "") else (applyMove lastmove game, "")
+
 react (UciPosition (UciFen p1 p2 p3 p4 p5 p6)) game = let g = construct p1 p2 game
                                                       in (addMove game g, "")
 
@@ -79,15 +84,60 @@ react UciStop game = (game, "")
 react UciQuit _ = (NullGame, "")
 react UciInvalid game = (game, "info invalid move")
 
+-- finds last move from Game state
+findMove :: Game -> Move
+findMove (OngoingGame _ _ _ lastMove) = lastMove
+findMove _ = NullMove
+
+-- Converts input string of type 'e2e4' to move
+convertMove :: String -> Game -> Move
+convertMove move game | len == 4 = normalMove move game
+                      | len == 5 = promotionMove move game
+                      | otherwise = NullMove
+                      where len = length move
+
+-- Normal move of type aibj
+normalMove move game = let from = makeField (take 2 move)
+                           to = makeField (drop 2 move)
+                       in case (checkCastlingMove from to game) of
+                            True -> CastlingMove from to to from
+                            False -> case (checkEnPassantMove from to game) of
+                                        True -> EnPassantMove from to to
+                                        False -> RegularMove from to
+                                    
+-- returns promotional move for given string and game state
+promotionMove move game = NullMove
+
+-- makes Field from given string like 'a2'
+makeField [col, row] = Field (ord col - (ord 'a') + 1) (ord row - (ord '0'))
+
+-- checks if CastlingMove or not
+checkCastlingMove :: Field -> Field -> Game -> Bool
+checkCastlingMove from to game = False
+
+-- checks if EnPassantMove or not
+checkEnPassantMove :: Field -> Field -> Game -> Bool
+checkEnPassantMove from to game = False
+
+-- Takes this move from current state of game to return new game
+applyMove :: Move -> Game -> Game
+applyMove move game = let clr = other (gameColor game)
+                          hist = game:(gameHist game)
+                          newBoard = updateBoard (gameBoard game) move
+                      in (OngoingGame clr newBoard hist move)
+
+-- Constructs current game state using fen and color string
 construct :: String -> String -> Game -> Game
 construct fen color game = OngoingGame clr (fen2Board fen) hist NullMove
                            where hist = gameHist game
                                  clr = if color == "b" then Black else White
 
+-- Creates board from give fen string
 fen2Board :: String -> Board
 fen2Board s = let rows = splitOn "/" (expand s)
               in Map.fromList [(Field c r, fig col) | (r,row) <- zip (reverse [1..(length rows)]) rows, (c,col) <- zip [1..(length row)] row, col /= '1']
 
+-- Expands a digit 'n' into string of ones of length n
 expand :: String -> String
 expand [] = []
 expand (x:xs) | isDigit x = (replicate (ord x - ord '0') '1') ++ (expand xs)
@@ -116,6 +166,7 @@ addMove lastGame curGame = let lastBoard = gameBoard lastGame
                                hist = gameHist curGame
                             in (OngoingGame clr curBoard hist move)
 
+-- Gets last move played by examining stored game state and game created by fen
 getMove :: Board -> Board -> Move
 getMove lastBoard curBoard = let (from,fromFig) = head (Map.toList (Map.difference lastBoard curBoard))
                                  to = head [t | (t,fig) <-  (Map.toList curBoard \\ (Map.toList lastBoard)), (fig == fromFig)]
