@@ -12,6 +12,8 @@ import Board
 import Figure
 import Color
 import ComputerPlayer
+--import SmartPlayer
+--import AdvancedPlayer
 
 -- Commands to engine from interface
 data UciQuery = UciHello
@@ -106,7 +108,11 @@ normalMove move game = let from = makeField (take 2 move)
                                         False -> RegularMove from to
                                     
 -- returns promotional move for given string and game state
-promotionMove move game = NullMove
+--promotionMove move game = NullMove
+promotionMove move game = let from = makeField (take 2 move)
+                              to = makeField (take 2 (drop 2 move))
+                              figure = Figure (piece (last move)) (gameColor game)
+                          in PromotionMove from to figure
 
 -- makes Field from given string like 'a2'
 makeField [col, row] = Field (ord col - (ord 'a') + 1) (ord row - (ord '0'))
