@@ -1,2 +1,4 @@
-Open ghci editor and load PlayChess.hs and run "playChess"
-Enjoy playing chess with bot
+# Sheldon : A UCI Compatible Haskell Chess Engine #
+> CS653 (Functional Programming)
+
+* Sheldon is haskell chess engine written completely in Haskell. An implementation following UCI protocol integrates it with existing GUIs like Arena. Command-line support is also available to test/play with the implementation.
