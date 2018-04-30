@@ -3,10 +3,7 @@ module AdvancedPlayer where
 import qualified Data.Map as Map
 import Data.Maybe (fromJust, fromMaybe, isNothing)
 import Data.List (sortBy, minimumBy)
-import Color
-import Figure
-import Field
-import Move
+import Properties
 import FigureMoves
 import Game
 import Rank

@@ -1,10 +1,7 @@
 module Board where
 
 import qualified Data.Map as Map
-import Color
-import Figure
-import Field
-import Move
+import Properties
 
 type Board = Map.Map Field Figure
 -- | The board state when the game starts.
@@ -69,12 +66,12 @@ updateBoard board (PromotionMove from to figure) =
   case Map.lookup from board of
     Just _ -> Map.insert to figure . Map.delete from $ board
     _ -> board
-updateBoard board (EnPassantMove from to captured) =
-  case Map.lookup from board of
-    Just figure -> Map.insert to figure .
-                   Map.delete from .
-                   Map.delete captured $ board
-    _ -> board
+-- updateBoard board (EnPassantMove from to captured) =
+--   case Map.lookup from board of
+--     Just figure -> Map.insert to figure .
+--                    Map.delete from .
+--                    Map.delete captured $ board
+--     _ -> board
 updateBoard board (CastlingMove fromKing toKing fromRook toRook) =
   case (Map.lookup fromKing board, Map.lookup fromRook board) of
     (Just king, Just rook) -> Map.insert toKing king .
@@ -82,20 +79,3 @@ updateBoard board (CastlingMove fromKing toKing fromRook toRook) =
                               Map.delete fromKing .
                               Map.delete fromRook $ board
     _ -> board
-
-
-{-
-
-ghci
-:load Chess/Board.hs
-startingBoard
-showBoard startingBoard
-putStr $ showBoard startingBoard
-putStr $ showBoard $ updateBoard startingBoard (RegularMove (Field 2 2) (Field 2 3))
-putStr $ showBoard $ updateBoard startingBoard (RegularMove (Field 3 3) (Field 2 3))
-putStr $ showBoard $ updateBoard startingBoard (PromotionMove (Field 2 2) (Field 2 8) (Figure Queen White))
-putStr $ showBoard $ updateBoard startingBoard (EnPassantMove (Field 2 2) (Field 3 3) (Field 3 7))
-putStr $ showBoard $ updateBoard startingBoard (CastlingMove (Field 5 1) (Field 3 1) (Field 1 1) (Field 4 1))
-:q
-
--}

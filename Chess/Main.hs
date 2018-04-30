@@ -2,10 +2,9 @@ module Main where
 
 import UCI
 import Game
-import ComputerPlayer
+import DumbPlayer
 import Board
-import Move
-import Color
+import Properties
 import System.IO
 
 main = loop NullGame
@@ -50,5 +49,5 @@ printGame game command = case command of
 printMove :: Game -> IO()
 printMove GameStart = return ()
 printMove (OngoingGame color _ _ lastMove) = putStrLn ("Last move: " ++ (show $ other color) ++
-                                                " " ++ (show $ Move.from lastMove) ++ " to " ++
-                                                (show $ Move.to lastMove))
+                                                " " ++ (show $ Properties.from lastMove) ++ " to " ++
+                                                (show $ Properties.to lastMove))

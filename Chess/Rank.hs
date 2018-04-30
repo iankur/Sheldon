@@ -2,37 +2,31 @@ module Rank where
 
 import qualified Data.Map as Map
 import Data.List (sort)
-import Color
-import Figure
-import Field
-import Move
+import Properties
 import FigureMoves
 import Game
 
 -- | Returns the rank of a figure of the given type.
 figureRank :: Figure -> Int
-figureRank = figureTypeRank . figureType
-  where figureTypeRank Queen = 900
-        figureTypeRank Rook = 450
-        figureTypeRank Knight = 300
-        figureTypeRank Bishop = 300
-        figureTypeRank Pawn = 100
-        figureTypeRank _ = 0
+figureRank f | figureType f == Queen  = 900
+             | figureType f == Rook   = 450
+             | figureType f == Knight = 300
+             | figureType f == Bishop = 300
+             | figureType f == Pawn   = 100
+             | otherwise              = 0
+
 
 -- |  Returns the rank of the given field.
 fieldRank :: Field -> Int
-fieldRank (Field col row) = 2*colRowRank(col) * colRowRank(row)
-  where colRowRank cr = if cr>=5 then 9-cr else cr
+fieldRank (Field col row) = 2 * (min col (9-col))  * (min row (9-row))
 
 -- | Returns the figure rank based on the figures it is defending.
 figureDefendingOtherFiguresRank :: Game -> Field -> Figure -> Int
-figureDefendingOtherFiguresRank game field figure =
-  (length $ defendedDestinations game (figureMoves figure field True)) `div` 2
+figureDefendingOtherFiguresRank game field figure = (length $ defendedDestinations game (figureMoves figure field True)) `div` 2
 
 -- | Returns a rank value related to whether the King is under check or not.
 checkRank :: Game -> Color -> Int
-checkRank game color =
-  if (gameColor game == other color) && isKingUnderCheck game then 50 else 0
+checkRank game color = if (gameColor game == other color) && isKingUnderCheck game then 50 else 0
 
 -- | Calculates the position rank taking one color into account.
 colorRank :: Game -> Color -> Int
@@ -78,37 +72,3 @@ maxrank games = maximum [rank game (gameColor game) | game <- games]
 giverank :: Tree Game -> [(Game, Int)]
 giverank (Node game []) = [(game, rank game (gameColor game))]
 giverank (Node game subtrees) = zip (map root subtrees) (map maxrank (map leaves subtrees))
-
-{-
-
-ghci
-:load Chess/Rank.hs
-figureRank (Figure Queen White) -- 900
-figureRank (Figure Knight Black) -- 300
-fieldRank (Field 1 1) -- 2
-fieldRank (Field 2 5) -- 16
-fieldRank (Field 4 4) -- 32
-let Just g1 = move (Field 1 2) (Field 1 3) Nothing GameStart
-let Just g2 = move (Field 1 7) (Field 1 6) Nothing g1
-figureDefendingOtherFiguresRank g2 (Field 2 1) (Figure Knight White) -- 1
-let Just g1 = move (Field 7 2) (Field 7 4) Nothing GameStart
-let Just g2 = move (Field 5 7) (Field 5 6) Nothing g1
-let Just g3 = move (Field 6 2) (Field 6 4) Nothing g2
-let Just g4 = move (Field 4 8) (Field 8 4) Nothing g3
-checkRank GameStart White -- 0
-checkRank g4 White -- 0
-checkRank g4 Black -- 50
-colorRank GameStart White -- 3928
-colorRank g1 White -- 3928
-colorRank g2 White -- 3935
-colorRank g3 White -- 3940
-colorRank g4 White -- 3947
-rank GameStart White -- 8
-rank g1 White -- 0
-rank g2 White -- 7
-rank g3 White -- 5
-rank g4 White -- -32
-rank GameStart Black -- -8
-:q
-
--}

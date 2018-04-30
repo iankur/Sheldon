@@ -5,13 +5,10 @@ import qualified Data.Map as Map
 import Data.Char
 import Data.List
 import Data.List.Split
-import Move
-import Field
+import Properties
 import Game
 import Board
-import Figure
-import Color
-import ComputerPlayer
+import DumbPlayer
 --import SmartPlayer
 --import AdvancedPlayer
 
@@ -79,7 +76,7 @@ react (UciPosition (UciFen p1 p2 p3 p4 p5 p6)) game = let g = construct p1 p2 ga
 react (UciGo _) game = let s = "bestmove "
                            newGame = fromJust (makeMove game)
                            OngoingGame _ _ _ move = newGame
-                           s2 = s ++ (show $ Move.from move) ++ (show $ Move.to move)
+                           s2 = s ++ (show $ Properties.from move) ++ (show $ Properties.to move)
                        in (newGame, s2)
 
 react UciStop game = (game, "")
@@ -104,9 +101,9 @@ normalMove move game = let from = makeField (take 2 move)
                            (castling, rookFrom, rookTo) = checkCastlingMove from to game
                        in case castling of
                             True -> CastlingMove from to rookFrom rookTo
-                            False -> case (checkEnPassantMove from to game) of
-                                        True -> EnPassantMove from to to
-                                        False -> RegularMove from to
+                            False -> RegularMove from to
+                            -- False -> case (checkEnPassantMove from to game) of
+                            --             True -> EnPassantMove from to to
                                     
 -- returns promotional move for given string and game state
 --promotionMove move game = NullMove

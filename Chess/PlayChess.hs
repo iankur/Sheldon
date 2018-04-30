@@ -3,10 +3,7 @@ module PlayChess where
 import Control.Exception
 import Data.Time
 import Data.Maybe (fromJust, fromMaybe, isNothing)
-import Color
-import Figure
-import Field
-import Move
+import Properties
 import Board
 import FigureMoves
 import Game

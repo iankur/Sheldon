@@ -3,10 +3,7 @@ module SmartPlayer where
 import qualified Data.Map as Map
 import Data.Maybe (fromJust, fromMaybe, isNothing)
 import Data.List (sortBy, maximumBy)
-import Color
-import Figure
-import Field
-import Move
+import Properties
 import FigureMoves
 import Game
 import Rank
